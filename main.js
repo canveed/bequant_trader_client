@@ -1,4 +1,4 @@
-const call = ({ ws, type, name, params }) => {
+const call = (ws, { type, name, params }) => {
   const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
   const method = type + capitalizedName; // Example of method: subscribeTicker
   const request = {
@@ -16,8 +16,7 @@ let lastOrdebook = {};
 const limit = 20;
 
 ws.onopen = () => {
-  call({
-    ws,
+  call(ws, {
     type: 'subscribe',
     name: 'orderbook',
     params: {

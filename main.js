@@ -11,8 +11,7 @@ const call = (ws, { type, name, params }) => {
 
 const ws = new WebSocket('wss://api.bequant.io/api/2/ws');
 
-let lastSnapshot = {};
-let lastOrdebook = {};
+let snapshot = {};
 const limit = 20;
 
 ws.onopen = () => {
@@ -25,12 +24,52 @@ ws.onopen = () => {
   });
 };
 
-const readyParams = (params) => {
-  let { ask, bid } = params;
-  params.ask = ask.slice(0, limit);
-  params.bid = bid.slice(0, limit);
+const removeNulls = (params, names) => {
+  names.forEach((name) => {
+    params[name].filter((item) => item.size != 0);
+    console.log(JSON.stringify(params[name]));
+  })
+  return (params);
+};
+
+const cutSnapshot = (params) => {
+  return ({
+    ...params,
+    ask: params.ask.slice(0, limit),
+    bid: params.bid.slice(0, limit),
+  });
+};
+
+const prepaireSnapshot = (rawParams) => {
+  let cuttedParams = cutSnapshot(rawParams);
+  const params = removeNulls(cuttedParams, ['ask', 'bid']);
+  console.log(params.ask);
+
   return params;
 }
+
+const prepareOrderbook = (snapshot, data, names) => {
+  let newSnapshot = {};
+  names.forEach((name) => {
+
+    let temp = snapshot[name].reduce((memo, i) => {
+      memo[i.price] = i.size;
+      return memo;
+    }, {});
+
+    data[name].forEach(item => {
+      temp[item.price] = item.size;
+    });
+
+    newSnapshot[name] = Object.keys(temp).filter(k => temp[k] != 0).map(k => ({
+      price: k,
+      size: temp[k]
+    }));
+
+  });
+  return removeNulls(newSnapshot, names);
+};
+
 
 ws.onmessage = (msg) => {
   const response = JSON.parse(msg.data);
@@ -38,11 +77,12 @@ ws.onmessage = (msg) => {
 
   switch (method) {
     case 'snapshotOrderbook':
-      lastSnapshot = readyParams(params);
-      console.log(lastSnapshot)
+      snapshot = prepaireSnapshot(params);
+      console.log('after snapshotOrderbook', JSON.stringify(snapshot));
       break;
     case 'updateOrderbook':
-      lastOrderbook = readyParams(params);
+      snapshot = prepareOrderbook(snapshot, params, ['ask', 'bid']);
+      console.log('after prepareOrderbook', JSON.stringify(snapshot));
       break;
   }
 };

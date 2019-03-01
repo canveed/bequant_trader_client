@@ -27,7 +27,6 @@ ws.onopen = () => {
 const removeNulls = (params, names) => {
   names.forEach((name) => {
     params[name].filter((item) => item.size != 0);
-    console.log(JSON.stringify(params[name]));
   })
   return (params);
 };
@@ -41,10 +40,8 @@ const cutSnapshot = (params) => {
 };
 
 const prepaireSnapshot = (rawParams) => {
-  let cuttedParams = cutSnapshot(rawParams);
+  const cuttedParams = cutSnapshot(rawParams);
   const params = removeNulls(cuttedParams, ['ask', 'bid']);
-  console.log(params.ask);
-
   return params;
 }
 
@@ -81,6 +78,8 @@ ws.onmessage = (msg) => {
       console.log('after snapshotOrderbook', JSON.stringify(snapshot));
       break;
     case 'updateOrderbook':
+      console.log(params);
+      console.log('before prepareOrderbook', JSON.stringify(snapshot));
       snapshot = prepareOrderbook(snapshot, params, ['ask', 'bid']);
       console.log('after prepareOrderbook', JSON.stringify(snapshot));
       break;

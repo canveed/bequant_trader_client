@@ -63,6 +63,7 @@ const prepareOrderbook = (snapshot, data, names) => {
       size: temp[k]
     }));
 
+    newSnapshot[name].sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
   });
   return removeNulls(newSnapshot, names);
 };
@@ -78,7 +79,6 @@ ws.onmessage = (msg) => {
       console.log('after snapshotOrderbook', JSON.stringify(snapshot));
       break;
     case 'updateOrderbook':
-      console.log(params);
       console.log('before prepareOrderbook', JSON.stringify(snapshot));
       snapshot = prepareOrderbook(snapshot, params, ['ask', 'bid']);
       console.log('after prepareOrderbook', JSON.stringify(snapshot));

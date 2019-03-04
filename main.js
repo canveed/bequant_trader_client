@@ -66,7 +66,7 @@ const prepareOrderbook = (snapshot, data, names) => {
     if (name == "ask")
       newSnapshot[name].sort((a, b) => parseFloat(a.price) - parseFloat(b.price)); // Low to Hight
     else
-      newSnapshot[name].sort((a, b) => parseFloat(a.price) - parseFloat(b.price)); // Hight to Low
+      newSnapshot[name].sort((a, b) => parseFloat(b.price) - parseFloat(a.price)); // Hight to Low
 
     newSnapshot[name] = newSnapshot[name].slice(0, limit);
   });
